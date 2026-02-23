@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<meta charset="utf-8">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>puzel game</title>
+
+		<style>
+			
+			* {
+
+				margin: 0px;
+				padding: 0px;
+				box-sizing: border-box;
+
+			}
+
+			html,body {
+
+				background: rgb(40, 40, 40);
+				background-size: cover;
+				background-position: center;
+				width: 100vh;
+			    height: 100vh;
+				color: white;
+
+			}
+
+			.game {
+
+				background: linear-gradient(to top, rgb(200, 200, 200), rgb(70, 70, 70))
+
+			}
+
+			.esquerda_button {
+
+				margin-top: -38vh;
+				margin-left: 2.5vh;
+
+			}
+
+			.direita_button {
+
+				margin-top: -38vh;
+				margin-left: 32.5vh;
+
+			}
+
+			.cima_button {
+
+				margin-top: -53vh;
+				margin-left: 17.5vh;
+
+			}
+
+			.baixo_button {
+
+				margin-top: -23vh;
+				margin-left: 17.5vh;
+
+			}
+
+			.enter_button {
+
+				margin-top: -38vh;
+				margin-left: 17.5vh;
+
+			}
+
+			.shift_button {
+
+				border: black 2px solid;
+				opacity: 0;
+				position: absolute;
+				margin-top: -77.5vh;
+				margin-left: 178vh;
+				width: 15vh;
+				height: 70vh;
+
+			}
+
+			#button_move {
+
+				border: black 2px solid;
+				opacity: 0;
+				position: absolute;
+				width: 15vh;
+				height: 15vh;
+
+			}
+
+			#button_move:active {
+
+				border: none;
+
+			}
+			.shift_button:active { 
+				border:none;
+			}
+
+		</style>
+
+	</head>
+
+	<body>
+
+		<canvas width="900" height="600" class="game"></canvas>
+
+		<button class="shift_button"></button>
+		<button class="enter_button" id="button_move"></button>
+		<button class="direita_button" id="button_move"></button>
+		<button class="esquerda_button" id="button_move"></button>
+		<button class="cima_button" id="button_move"></button>
+		<button class="baixo_button" id="button_move"></button>
+
+	</body>
+
+	<script defer>
+		
+		const canvas = document.querySelector(".game")
+		const ctx = canvas.getContext("2d") //configurando o canvas
+
+		const pc = window.confirm("você está em um computador?")
+
+		let direita_button = document.querySelector(".direita_button")
+		let esquerda_button = document.querySelector(".esquerda_button")
+
+		let cima_button = document.querySelector(".cima_button")
+		let baixo_button = document.querySelector(".baixo_button")
+
+		let enter_button = document.querySelector(".enter_button")
+
+		let shift_button = document.querySelector(".shift_button")
+
+		let button_trans = 0.4
+
+		function testar_level(cena, number_cena) {
+
+			cena()
+			cena_atu = cenas[number_cena]
+
+		}
+
+		function draw_cube(x, y, width, height, color, alpha, contorno, stroke_color, stroke_size) {
+
+			if (contorno == false) {
+
+				ctx.globalAlpha = alpha
+				ctx.fillStyle = color
+				ctx.fillRect(x, y, width, height)	
+
+			}else{
+
+				ctx.globalAlpha = alpha
+				ctx.fillStyle = color
+				ctx.fillRect(x, y, width, height)
+				ctx.strokeStyle = stroke_color
+			    ctx.lineWidth = stroke_size
+			    ctx.lineJoin = 'round';
+
+			}
+
+		}
+
+		function draw_image(image, x, y, width, height, alpha) {
+
+			ctx.globalAlpha = alpha
+			ctx.drawImage(image, x, y, width, height)
+
+		}
+
+		function write_text(x, y, color, font, text, alpha, contorno, stroke_color, stroke_size) {
+
+			if (contorno == false) {
+
+				ctx.fillStyle = color
+				ctx.globalAlpha = alpha
+				ctx.font = font
+				ctx.fillText(text ,x, y)
+
+			}else{
+
+				ctx.fillStyle = color
+				ctx.globalAlpha = alpha
+				ctx.font = font
+				ctx.strokeStyle = stroke_color
+				ctx.fillText(text ,x, y)
+				ctx.lineWidth = stroke_size
+				ctx.strokeText(text ,x, y)
+
+			}
+
+		}
+
+		function random_munber(min, max) {
+			return Math.floor(Math.random() * (max - min + 1)) + min
+		}
+
+		let pause = false
+
+		function colisao(obj1_x, obj1_y, obj1_width, obj1_height,obj2_x, obj2_y, obj2_width, obj2_height, funcao) {
+
+			if (
+		    obj1_x < obj2_x + obj2_width &&
+		    obj1_x + obj1_width > obj2_x &&
+		    obj1_y < obj2_y + obj2_height &&
+		    obj1_y + obj1_height > obj2_y &&
+		    pause == false
+		  	) {
+
+				funcao()
+
+			}
+
+		}// verifica se há colisão
+
+		function reset() {
+
+			player.spd = 0
+
+			if (cena_atu == cenas[2]) {
+
+				trasi_black.trasicao = "in"
+				funcao_transi = function() {
+
+					level_1()
+
+				}
+				transi_atu = "transicao_1"
+
+			}else if (cena_atu == cenas[3]) {
+
+				trasi_black.trasicao = "in"
+				funcao_transi = function() {
+
+					level_2()
+
+				}
+				transi_atu = "transicao_1"
+
+			}else if (cena_atu == cenas[4]) {
+
+				trasi_black.trasicao = "in"
+				funcao_transi = function() {
+
+					level_3()
+
+				}
+				transi_atu = "transicao_1"
+
+			}
+
+		}
+
+		function verificarOrientacao() {
+		    if (window.matchMedia("(orientation: portrait)").matches) {
+		        // Se estiver em modo retrato (vertical), mostra um aviso
+		        alert("deixa o celular deitado pó")
+		        location.reload()
+		    }
+		}
+
+		const cenas = [ "menu", "configurar", "skins", "level1", "level2" , "level3", "level4", "level5", "level6", "level7", "level8", "level9", "level10"]
+		let cena_atu = cenas[0]
+
+		let zerou = 0
+
+		let player = null
+		let coroa_fim = null
+		let obstacolos = null
+		let objetos = null
+
+		let logo = { x:120, y:150, red:0, green:0, blue:0, red_max:random_munber(0, 255), green_max:random_munber(0, 255), blue_max:random_munber(0, 255), text:"THE PUZEL GAME BETA", alpha:1, stroke:true, stroke_color:"black", stroke_size:4}
+
+		let transi_atu = "transicao_out_1"
+		let trasi_black = { x:0, y:0, width:900, height:600, color:"black",  alpha:10, trasicao:"out", contador:[0,0]}
+		let pode_trasi = true
+
+		let teclas_input = ["d", "a", "w", "s","Enter", "Shift"]
+
+		let pause_block_black = null
+
+		let font_ale = random_munber(1, 8)
+
+		if (font_ale == 1) { font_ale = "60px Cooper Black" }
+		else if (font_ale == 2) { font_ale = "80px Impact" }
+		else if (font_ale == 3) { font_ale = "63px Arial" }
+		else if (font_ale == 4) { font_ale = "60px Verdana" }
+		else if (font_ale == 5) { font_ale = "55px Arial Black" }
+		else if (font_ale == 6) { font_ale = "65px Aharoni" }
+		else if (font_ale == 7) { font_ale = "60px Forte" }
+		else if (font_ale == 8) { font_ale = "50px Ravie"
+		logo.font = "55px"}
+
+		let op = null
+
+		let sair = null
+
+		const teclas = {}
+		const buttons = {}
+
+		let funcao_transi = null
+
+		function transicao_1() {
+
+			if (pode_trasi == true && transi_atu == "transicao_1") {
+
+				if (trasi_black.contador[0] == 4 && trasi_black.contador[1] != 81) {
+
+					if (trasi_black.trasicao == "in" && trasi_black.alpha != 10) { ++trasi_black.alpha }else{ funcao_transi()
+					trasi_black.trasicao = "out" }
+					if (trasi_black.trasicao == "out" && trasi_black.alpha != 0) { --trasi_black.alpha }
+
+					trasi_black.contador[0] = 0
+
+				}
+
+				if (trasi_black.contador[1] == 81) {
+
+					trasi_black.trasicao = null
+					transi_atu = null
+					trasi_black.alpha = 0
+					trasi_black.contador[0] = 0
+					trasi_black.contador[1] = 0
+
+				}
+
+				++trasi_black.contador[0]
+				++trasi_black.contador[1]
+				teclas[""] = false
+
+			}
+
+		}
+
+		function transicao_in_1() {
+
+			if (pode_trasi == true && transi_atu == "transicao_in_1") {
+
+				if (trasi_black.contador[0] == 4 && trasi_black.contador[1] != 41) {
+
+					if (trasi_black.trasicao == "in" && trasi_black.alpha != 10) { ++trasi_black.alpha }else{ trasi_black.trasicao = null }
+
+					trasi_black.contador[0] = 0
+
+				}
+
+				if (trasi_black.contador[1] == 41) {
+
+					trasi_black.trasicao = null
+					transi_atu = null
+					trasi_black.contador[0] = 0
+					trasi_black.contador[1] = 0
+
+				}
+
+				++trasi_black.contador[0]
+				++trasi_black.contador[1]
+				teclas[""] = false
+
+			}
+
+		}
+
+		function transicao_out_1() {
+
+			if (pode_trasi == true && transi_atu == "transicao_out_1") {
+
+				if (trasi_black.contador[0] == 4 && trasi_black.contador[1] != 41) {
+
+					if (trasi_black.trasicao == "out" && trasi_black.alpha != 0) { --trasi_black.alpha }else{ trasi_black.trasicao = null }
+
+					trasi_black.contador[0] = 0
+
+				}
+
+				if (trasi_black.contador[1] == 41) {
+
+					trasi_black.trasicao = null
+					transi_atu = null
+					trasi_black.contador[0] = 0
+					trasi_black.contador[1] = 0
+
+				}
+
+				++trasi_black.contador[0]
+				++trasi_black.contador[1]
+				teclas[""] = false
+
+			}
+
+		}
+
+		function menu() {
+
+			op = { select:1, select_max:3, contorno:"black" ,x1:150, y1:350, color1:"red", font1:"75px Impact", text1:"jogar", alpha1:1,
+			x2:50, y2:450, color2:"white", font2:"75px Impact", text2:"comfiguração", alpha2:0.5,
+			x3:50, y3:550, color3:"white", font3:"75px Impact", text3:"skins", alpha3:0.5}
+
+			pause_block_black = { x:0, y:0, width:900, height:600, color:"black", alpha:0.5 }
+
+		}
+
+		function configurar() {
+
+			if (pc == true) {
+
+				op = { select1:1, select_max1:2, select2:1, select_max2:2, contorno:"black" ,x1:125, y1:300, color1:"red", font1:"60px Impact",
+				text1:`⇦  teclas: ${teclas_input[0]}, ${teclas_input[1]}, ${teclas_input[2]}, ${teclas_input[3]}  ⇨`
+				,alpha1:1,x2:300, y2:400, color2:"white", font2:"70px Impact", text2:"voltar", alpha2:0.5}
+
+			}else {
+
+				op = { select1:1, select_max1:3, contorno:"black" ,x1:310, y1:300, color1:"red", font1:"60px Impact",
+				text1:"cor de input",x2:200, y2:400, color2:"white", font2:"70px Impact", text2:"transparencia de input", alpha2:0.5,
+				x3:310, y3:500, color3:"white", font3:"70px Impact", text3:"voltar", alpha3:0.5 }
+
+			}
+
+			pause_block_black = { x:0, y:0, width:900, height:600, color:"black", alpha:0.5 }
+
+		}
+
+		function skins() {
+
+			op = { select1:1, select_max1:2, contorno:"black" ,x1:310, y1:400, color1:"red", font1:"60px Impact",
+			text1:"cor do player", alpha1:1,x2:260, y2:500, color2:"white", font2:"70px Impact", text2:"voltar", alpha2:0.5 }
+
+		}
+
+		function level_1() {
+
+			player = { prevX:75, prevY:50, x:75, y:50, width:50, height:50, color:"red", alpha:1, spd:5, skin_img:new Image }
+			player.skin_img.src = "./static/player_skin_1.png"
+
+			alert(player.skin_img.src)
+			alert(player.skin_img)
+
+			obstacolos = [{x:0, y:150, width:400, height:50, color:"black", alpha:1},
+			{x:600, y:150, width:300, height:450, color:"black", alpha:1},
+			{x:400, y:150, width:50, height:250, color:"black", alpha:1},
+			{x:0, y:550, width:600, height:50, color:"black", alpha:1},
+			{x:195, y:250, width:50, height:300, color:"black", alpha:1}]
+
+			objetos = {
+
+				button:{ active:false,x:40, y:420, width:120, height:70, color:"orange", alpha:1 },
+				spikes:{ x:625, y:0, width:50, height:150, color:"gray", alpha:1 }}
+
+			op = { select:1, select_max:2, contorno:"black" ,x1:canvas.width/2-150, y1:250, color1:"red", font1:"75px Impact", text1:"continuar", alpha1:1,
+			x2:canvas.width/2-210, y2:350, color2:"white", font2:"75px Impact", text2:"voltar ao menu", alpha2:1}
+
+			coroa_fim = { x:800, y:0, width:100, height:150, color:"yellow", alpha:1}
+
+		}
+
+		function level_2() {
+
+			player = { prevX:50, prevY:260, x:50, y:260, width:50, height:50, color:"red", alpha:1, spd:5 }
+
+			obstacolos = [{x:200, y:0, width:50, height:600, color:"black", alpha:1},
+			{x:650, y:50, width:250, height:50, color:"black", alpha:1},
+			{x:650, y:50, width:50, height:450, color:"black", alpha:1},
+			{x:650, y:500, width:250, height:50, color:"black", alpha:1}]
+
+			objetos = { 
+				teleporter:[{ x:40, y:20, width:100, height:100, color:"whitesmoke", alpha:1},
+				{ x:40, y:470, width:100, height:100, color:"whitesmoke", alpha:1},
+				{ x:300, y:50, width:100, height:100, color:"whitesmoke", alpha:1},
+				{ x:300, y:450, width:100, height:100, color:"whitesmoke", alpha:1},
+				{ x:300, y:250, width:100, height:100, color:"whitesmoke", alpha:1},
+				{ x:500, y:50, width:100, height:100, color:"whitesmoke", alpha:1},
+				{ x:500, y:450, width:100, height:100, color:"whitesmoke", alpha:1},
+				{ x:500, y:250, width:100, height:100, color:"whitesmoke", alpha:1},
+				{ x:750, y:150, width:100, height:100, color:"whitesmoke", alpha:1}],
+				teleporter_count:[0,50]
+			}
+
+			coroa_fim = { x:700, y:425, width:200, height:75, color:"yellow", alpha:1}
+
+			op = { select:1, select_max:2, contorno:"black" ,x1:canvas.width/2-150, y1:250, color1:"red", font1:"75px Impact", text1:"continuar", alpha1:1,
+			x2:canvas.width/2-210, y2:350, color2:"white", font2:"75px Impact", text2:"voltar ao menu", alpha2:1}
+
+		}
+
+		function level_3() {
+
+			player = { prevX:750, prevY:500, x:750, y:500, width:50, height:50, color:"red", alpha:1, spd:5 }
+
+			obstacolos = [
+				{x:0, y:150, width:350, height:50, color:"black", alpha:1},
+				{x:550, y:400, width:350, height:50, color:"black", alpha:1},
+				{x:690, y:230, width:50, height:170, color:"black", alpha:1}
+			]
+
+			objetos = {
+
+				button:{ active:false,x:760, y:320, width:120, height:70, color:"orange", alpha:1 },
+				spikes:{ x:300, y:200, width:50, height:400, color:"gray", alpha:1 },
+				purple_door:{x:290, y:0, width:35, height:150, color:"purple", alpha:1},
+				purple_key:{ coleted:false,x:100, y:365, width:60, height:35, color:"purple", alpha:1}}
+
+			coroa_fim = {x:0, y:0, width:75, height:150, color:"yellow", alpha:1}
+
+		}
+
+
+		function draw() {
+
+			ctx.clearRect(0,0, canvas.width, canvas.height)
+
+			if (cena_atu == cenas[0]) {
+
+				draw_cube(pause_block_black.x, pause_block_black.y, pause_block_black.width, pause_block_black.height, pause_block_black.color, pause_block_black.alpha)
+
+				write_text(logo.x, logo.y, `rgb(${logo.red}, ${logo.green}, ${logo.blue})`, font_ale, logo.text, logo.alpha, logo.stroke, logo.stroke_color, logo.stroke_size)
+				write_text(10, 590, "white", "20px Impact", "aperte enter para selecionar", 1, true, "black", 1)
+
+				write_text(op.x1, op.y1, op.color1, op.font1, op.text1, op.alpha1, true, op.contorno, 3)
+				write_text(op.x2, op.y2, op.color2, op.font2, op.text2, op.alpha2, true, op.contorno, 3)
+				write_text(op.x3, op.y3, op.color3, op.font3, op.text3, op.alpha3, true, op.contorno, 3)
+
+				if (zerou >= 1) {
+
+					write_text(200, 230, "black", "50px Arial Black", "obrigado por testar!!", logo.alpha, true, `rgb(${logo.red}, ${logo.green}, ${logo.blue})`, 3)
+
+				}
+
+				draw_cube(trasi_black.x, trasi_black.y, trasi_black.width, trasi_black.height, trasi_black.color, trasi_black.alpha/10)
+
+			}else if (cena_atu == cenas[1]) {
+
+				draw_cube(pause_block_black.x, pause_block_black.y, pause_block_black.width, pause_block_black.height, pause_block_black.color, pause_block_black.alpha)
+
+				write_text(150, 150, "white", "100px Impact", "CONFIGURAÇÃO", 1, true, "black", 3.5)
+
+				write_text(op.x1, op.y1, op.color1, op.font1, op.text1, op.alpha1, true, op.contorno, 3)
+				write_text(op.x2, op.y2, op.color2, op.font2, op.text2, op.alpha2, true, op.contorno, 3)
+				write_text(op.x3, op.y3, op.color3, op.font3, op.text3, op.alpha3, true, op.contorno, 3)
+
+
+				draw_cube(trasi_black.x, trasi_black.y, trasi_black.width, trasi_black.height, trasi_black.color, trasi_black.alpha/10)
+
+			}else if (cena_atu == cenas[2]) {
+
+				write_text(op.x1, op.y1, op.color1, op.font1, op.text1, op.alpha1)
+				write_text(op.x2, op.y2, op.color2, op.font2, op.text2, op.alpha2)
+
+				draw_cube(trasi_black.x, trasi_black.y, trasi_black.width, trasi_black.height, trasi_black.color, trasi_black.alpha/10)
+			
+			}else if (cena_atu == cenas[3]) {
+
+				draw_cube(coroa_fim.x, coroa_fim.y, coroa_fim.width, coroa_fim.height, coroa_fim.color, coroa_fim.alpha)
+
+				for (let i = 0; i < obstacolos.length; ++i) {
+
+					draw_cube(obstacolos[i].x, obstacolos[i].y, obstacolos[i].width, obstacolos[i].height, obstacolos[i].color, obstacolos[i].alpha)
+
+				}
+
+				if (objetos.button.active == false) {
+
+					draw_cube(objetos.spikes.x, objetos.spikes.y, objetos.spikes.width, objetos.spikes.height, objetos.spikes.color, objetos.spikes.alpha)
+					draw_cube(objetos.button.x, objetos.button.y, objetos.button.width, objetos.button.height, objetos.button.color, objetos.button.alpha)
+
+				}
+
+				draw_cube(player.x, player.y, player.width, player.height, player.color, player.alpha)
+				draw_image( player.skin_img, player.x, player.y, player.width, player.height, player.alpha)
+
+				draw_cube(pause_block_black.x, pause_block_black.y, pause_block_black.width, pause_block_black.height, pause_block_black.color, pause_block_black.alpha)
+
+				if (pause == true) {
+
+					write_text(op.x1, op.y1, op.color1, op.font1, op.text1, op.alpha1)
+					write_text(op.x2, op.y2, op.color2, op.font2, op.text2, op.alpha2)
+					
+				}
+
+				draw_cube(trasi_black.x, trasi_black.y, trasi_black.width, trasi_black.height, trasi_black.color, trasi_black.alpha/10)
+
+			}else if (cena_atu == cenas[4]) {
+
+				for (let i = 0; i < obstacolos.length; ++i) {
+
+					draw_cube(obstacolos[i].x, obstacolos[i].y, obstacolos[i].width, obstacolos[i].height, obstacolos[i].color, obstacolos[i].alpha)
+
+				}
+
+				for (let i = 0; i < objetos.teleporter.length; i++) {
+
+					draw_cube(objetos.teleporter[i].x, objetos.teleporter[i].y, objetos.teleporter[i].width, objetos.teleporter[i].height, objetos.teleporter[i].color, objetos.teleporter[i].alpha)
+
+				}
+
+				draw_cube(coroa_fim.x, coroa_fim.y, coroa_fim.width, coroa_fim.height, coroa_fim.color, coroa_fim.alpha)
+
+				draw_cube(player.x, player.y, player.width, player.height, player.color, player.alpha)
+
+				draw_cube(pause_block_black.x, pause_block_black.y, pause_block_black.width, pause_block_black.height, pause_block_black.color, pause_block_black.alpha)
+
+				if (pause == true) {
+
+					write_text(op.x1, op.y1, op.color1, op.font1, op.text1, op.alpha1)
+					write_text(op.x2, op.y2, op.color2, op.font2, op.text2, op.alpha2)
+					
+				}
+
+				draw_cube(trasi_black.x, trasi_black.y, trasi_black.width, trasi_black.height, trasi_black.color.color, trasi_black.alpha)
+
+			}else if (cena_atu == cenas[5]) {
+
+				for (let i = 0; i < obstacolos.length; ++i) {
+
+					draw_cube(obstacolos[i].x, obstacolos[i].y, obstacolos[i].width, obstacolos[i].height, obstacolos[i].color, obstacolos[i].alpha)
+
+				}
+
+				if (objetos.button.active == false) {
+
+					draw_cube(objetos.spikes.x, objetos.spikes.y, objetos.spikes.width, objetos.spikes.height, objetos.spikes.color, objetos.spikes.alpha)
+					draw_cube(objetos.button.x, objetos.button.y, objetos.button.width, objetos.button.height, objetos.button.color, objetos.button.alpha)
+
+				}
+				
+				if (objetos.purple_key.coleted == false) {
+
+					draw_cube(objetos.purple_door.x, objetos.purple_door.y, objetos.purple_door.width, objetos.purple_door.height, objetos.purple_door.color, objetos.purple_door.alpha)
+					draw_cube(objetos.purple_key.x, objetos.purple_key.y, objetos.purple_key.width, objetos.purple_key.height, objetos.purple_key.color, objetos.purple_key.alpha)
+
+				}
+
+				draw_cube(coroa_fim.x, coroa_fim.y, coroa_fim.width, coroa_fim.height, coroa_fim.color, coroa_fim.alpha)
+
+				draw_cube(player.x, player.y, player.width, player.height, player.color, player.alpha)
+
+				/*for (let i = 0; i < objetos.teleporter.length; i++) {
+
+					draw_cube(objetos.teleporter[i].x, objetos.teleporter[i].y, objetos.teleporter[i].width, objetos.teleporter[i].height, objetos.teleporter[i].color, objetos.teleporter[i].alpha)
+
+				}*/
+
+				draw_cube(pause_block_black.x, pause_block_black.y, pause_block_black.width, pause_block_black.height, pause_block_black.color, pause_block_black.alpha)
+
+				draw_cube(trasi_black.x, trasi_black.y, trasi_black.width, trasi_black.height, trasi_black.color, trasi_black.alpha/10)
+
+			}
+
+		}
+
+		function update() {
+
+			if (cena_atu == cenas[0]) {
+
+				transicao_1()
+				transicao_in_1()
+				transicao_out_1()
+
+				if (logo.red != logo.red_max) {
+
+					if (logo.red > logo.red_max) {
+
+						logo.red--
+
+					}else{
+
+						logo.red++
+
+					}
+
+				}else{
+
+					logo.red_max = random_munber(50, 220)
+
+				}
+
+				if (logo.blue != logo.blue_max) {
+
+					if (logo.blue > logo.blue_max) {
+
+						logo.blue--
+
+					}else{
+
+						logo.blue++
+
+					}
+
+				}else{
+
+					logo.blue_max = random_munber(50, 220)
+
+				}
+
+				if (logo.green != logo.green_max) {
+
+					if (logo.green > logo.green_max) {
+
+						logo.green--
+
+					}else{
+
+						logo.green++
+
+					}
+
+				}else{
+
+					logo.green_max = random_munber(50, 220)
+
+				}
+
+				if (teclas[teclas_input[2]]) {
+
+					if (op.select != 1) {
+						--op.select
+					}else{
+						op.select = op.select_max
+					}
+
+					teclas[teclas_input[2]] = false
+
+					op.color1 = "white"
+					op.color2 = "white"
+					op.color3 = "white"
+					op.x1 = 50
+					op.x2 = 50
+					op.x3 = 50
+					op.alpha1 = 0.5
+					op.alpha2 = 0.5
+					op.alpha3 = 0.5
+
+				}
+
+				if (teclas[teclas_input[3]]) {
+
+					if (op.select != op.select_max) {
+						++op.select
+					}else{
+						op.select = 1
+					}
+
+					teclas[teclas_input[3]] = false
+
+					op.color1 = "white"
+					op.color2 = "white"
+					op.color3 = "white"
+					op.x1 = 50
+					op.x2 = 50
+					op.x3 = 50
+					op.alpha1 = 0.5
+					op.alpha2 = 0.5
+					op.alpha3 = 0.5
+
+				}
+
+				if (op.select == 1) {
+					op.color1 = "red"
+					if (op.x1 != 150) {op.x1 += 25}
+					op.alpha1 = 1
+				}else if (op.select == 2) {
+					op.color2 = "red"
+					if (op.x2 != 100) {op.x2 += 25}
+					op.alpha2 = 1
+				}else if (op.select == 3) {
+					op.color3 = "red"
+					if (op.x3 != 100) {op.x3 += 25}
+					op.alpha3 = 1
+				}
+
+				if (teclas[teclas_input[4]]) {
+
+					if (op.select == 1) {
+
+						trasi_black.trasicao = "in"
+						funcao_transi = function() { cena_atu = cenas[3]
+						teclas[teclas_input[4]] = false
+						level_1() }
+						transi_atu = "transicao_1"
+
+					}
+
+					else if (op.select == 2) { 
+
+						trasi_black.trasicao = "in"
+						funcao_transi = function() { cena_atu = cenas[1]
+							
+							configurar()
+						}
+						transi_atu = "transicao_1"
+
+					}
+
+					else if (op.select == 3) { 
+
+						trasi_black.trasicao = "in"
+						funcao_transi = function() { cena_atu = cenas[2]
+							
+							skins()
+						}
+						transi_atu = "transicao_1"
+
+					}
+
+				}
+
+			}else if (cena_atu == cenas[1]) {
+
+				transicao_1()
+				transicao_in_1()
+				transicao_out_1()
+
+				if (teclas[teclas_input[2]]) {
+
+					if (pc == true) {
+
+						if (op.select1 != 1) {
+							--op.select1
+						}else{
+							op.select1 = op.select_max1
+						}
+
+						teclas[teclas_input[2]] = false
+
+						op.color1 = "white"
+						op.color2 = "white"
+						op.x1 = 310
+						op.y1 = 300
+						op.x2 = 200
+						op.y2 = 400
+						op.alpha1 = 0.5
+						op.alpha2 = 0.5
+
+					}else{
+
+						if (op.select1 != 1) {
+							--op.select1
+						}else{
+							op.select1 = op.select_max1
+						}
+
+						teclas[teclas_input[2]] = false
+
+						op.color1 = "white"
+						op.color2 = "white"
+						op.x1 = 310
+						op.y1 = 300
+						op.x2 = 200
+						op.y2 = 400
+						op.alpha1 = 0.5
+						op.alpha2 = 0.5
+						op.color3 = "white"
+						op.x3 = 310
+						op.y3 = 500
+						op.alpha3 = 0.5
+
+					}
+
+				}
+
+				if (teclas[teclas_input[3]]) {
+
+					teclas[teclas_input[3]] = false
+
+					if (pc == true) {
+
+						if (op.select1 != op.select_max1) {
+							++op.select1
+						}else{
+							op.select1 = 1
+						}
+
+						op.color1 = "white"
+						op.color2 = "white"
+						op.x1 = 310
+						op.y1 = 300
+						op.x2 = 200
+						op.y2 = 400
+						op.alpha1 = 0.5
+						op.alpha2 = 0.5
+
+					}else{
+
+						if (op.select1 != op.select_max1) {
+							++op.select1
+						}else{
+							op.select1 = 1
+						}
+
+						op.color1 = "white"
+						op.color2 = "white"
+						op.x1 = 310
+						op.y1 = 300
+						op.x2 = 200
+						op.y2 = 400
+						op.alpha1 = 0.5
+						op.alpha2 = 0.5
+						op.color3 = "white"
+						op.x3 = 310
+						op.y3 = 500
+						op.alpha3 = 0.5
+
+					}
+
+				}
+
+				if (pc == true) {
+
+					if (op.select1 == 1) {
+						op.color1 = "red"
+						op.alpha1 = 1
+
+						if (op.select2 == 1) { teclas_input = ["d", "a", "w", "s", "Enter", "Shift"]
+						op.text1 = `${teclas_input[0]} - ${teclas_input[1]} - ${teclas_input[2]} - ${teclas_input[3]} - ${teclas_input[4]} - ${teclas_input[5]}` }
+
+						else if (op.select2 == 2) { teclas_input = ["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown", "Enter", "Shift"] 
+						op.text1 = "← -  ↑ -  → - ↓ - Enter - Shift"
+						op.x1 = 50}
+
+						if (teclas[teclas_input[0]]) {
+
+							if (op.select2 != op.select_max2) {
+
+								teclas[teclas_input[0]] = false
+								++op.select2
+
+							}else { op.select2 = 1 }
+						}
+
+						if (teclas[teclas_input[1]]) {
+
+							if (op.select2 != 1) {
+
+								teclas[teclas_input[2]] = false
+								--op.select2
+
+							}else { op.select2 = op.select_max2 }
+						}
+
+					}else if (op.select1 == 2) {
+						op.color2 = "red"
+						op.alpha2 = 1
+					}
+
+					if (teclas[teclas_input[4]]) {
+
+						if (op.select1 == 2) {
+
+							trasi_black.trasicao = "in"
+							funcao_transi = function() { cena_atu = cenas[0]
+							menu()}
+							transi_atu = "transicao_1"
+
+						}
+					}
+
+				}else {
+
+					if (op.select1 == 1) {
+
+						op.color1 = "red"
+						op.alpha1 = 1
+
+					}
+
+					if (op.select1 == 2) {
+
+						op.color2 = "red"
+						op.alpha2 = 1
+
+					}
+
+					if (op.select1 == 3) {
+
+						op.color3 = "red"
+						op.alpha3 = 1
+
+					}
+
+					if (teclas[teclas_input[4]]) {
+
+						teclas[teclas_input[4]] = false
+
+						if (op.select1 == 1) {
+
+							esquerda_button.style.background = `rgb(${window.prompt("coloque um codigo rgb")})`
+							direita_button.style.background = esquerda_button.style.background
+							cima_button.style.background = esquerda_button.style.background
+							baixo_button.style.background = esquerda_button.style.background
+							enter_button.style.background = esquerda_button.style.background
+							shift_button.style.background = esquerda_button.style.background
+
+						}else if (op.select1 == 2) {
+
+							button_trans = window.prompt("degite de 1 á 10")/10
+
+							if (button_trans == 0) {button_trans = 0.1}
+							if (button_trans >= 11) {button_trans = 10}
+
+						}else if (op.select1 == 3) {
+
+							trasi_black.trasicao = "in"
+							funcao_transi = function() { cena_atu = cenas[0]
+							menu() }
+							transi_atu = "transicao_1"
+
+						}
+
+					}
+
+				}
+			
+			}else if (cena_atu == cenas[2]) {
+
+				transicao_1()
+				transicao_in_1()
+				transicao_out_1()
+
+			}else if (cena_atu == cenas[3]) {
+
+				transicao_1()
+				transicao_in_1()
+				transicao_out_1()
+
+				if (pause == false) {
+
+					pause_block_black.alpha = 0
+
+					player.prevX = player.x
+					player.prevY = player.y
+
+					if (player.x != 900-player.width) {
+
+						if (teclas[teclas_input[0]]) {
+
+							player.x += player.spd
+
+						}
+
+					}
+
+					if (player.x != 0) {
+
+						if (teclas[teclas_input[1]]) {
+
+							player.x -= player.spd
+
+						}
+
+					}
+
+					if (player.y != 0) {
+
+						if (teclas[teclas_input[2]]) {
+
+							player.y -= player.spd
+
+						}
+
+					}
+
+					if (player.y != 600-player.width) {
+
+						if (teclas[teclas_input[3]]) {
+
+							player.y += player.spd
+
+						}
+
+					}
+
+					if (teclas[teclas_input[4]]) {
+
+						pause = true
+						teclas[teclas_input[4]] = false
+
+					}
+
+					if (player.x != player.prevX || player.y != player.prevY || player.x != player.prevX && player.y != player.prevY) {
+
+						console.clear()
+						console.log(`X: ${player.x} -- Y: ${player.y}`)
+
+					}
+
+					for (let i = 0; i < obstacolos.length; ++i) {
+
+						colisao(player.x, player.y, player.width, player.height, obstacolos[i].x, obstacolos[i].y, obstacolos[i].width, obstacolos[i].height, function () {
+
+							if (player.prevX + player.width <= obstacolos[i].x) {
+
+								player.x = obstacolos[i].x - player.width
+
+							}else if (player.prevX >= obstacolos[i].x + obstacolos[i].width) {
+
+								player.x = obstacolos[i].x + obstacolos[i].width
+
+							}
+
+							if (player.prevY + player.height <= obstacolos[i].y) {
+
+								player.y = obstacolos[i].y - player.height
+
+							}else if (player.prevY >= obstacolos[i].y + obstacolos[i].height) {
+
+								player.y = obstacolos[i].y + obstacolos[i].height
+
+							}
+
+						})
+
+					}
+
+					if (objetos.button != undefined && objetos.button.active != true) {
+
+						colisao(player.x, player.y, player.width, player.height, objetos.button.x, objetos.button.y, objetos.button.width, objetos.button.height, function() {
+
+							if (teclas[teclas_input[5]]) {
+
+								objetos.button.active = true
+
+							}
+
+						})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.spikes.x, objetos.spikes.y, objetos.spikes.width, objetos.spikes.height, function() {
+
+							reset()
+
+						})
+
+					}
+
+					colisao(player.x, player.y, player.width, player.height, coroa_fim.x, coroa_fim.y, coroa_fim.width, coroa_fim.height, function () {
+
+						trasi_black.trasicao = "in"
+						funcao_transi = function() { cena_atu = cenas[4]
+						level_2()}
+						transi_atu = "transicao_1"
+
+					})
+
+				}else{
+
+					pause_block_black.alpha = 0.5
+
+					if (teclas[teclas_input[2]]) {
+
+						teclas[teclas_input[2]] = false
+
+						if (op.select != 1) { op.select-- }
+						else{ op.select = op.select_max }
+
+						op.color1 = "white"
+						op.color2 = "white"
+
+					}
+
+					if (teclas[teclas_input[3]]) {
+
+						teclas[teclas_input[3]] = false
+
+						if (op.select != op.select_max) { op.select++ }
+						else{ op.select = 1 }
+
+						op.color1 = "white"
+						op.color2 = "white"
+
+					}
+
+					if (op.select == 1) { op.color1 = "red" 
+
+						if (teclas[teclas_input[4]]) {
+
+							pause = false
+							teclas[teclas_input[4]] = false
+
+						}
+
+					}
+
+					else if (op.select == 2) { op.color2 = "red" 
+
+						if (teclas[teclas_input[4]]) {
+
+							trasi_black.trasicao = "in"
+
+							funcao_transi = function() {
+
+								pause = false
+								cena_atu = cenas[0]
+								menu()
+
+							}
+
+							transi_atu = "transicao_1"
+
+						}
+
+					}
+
+				}
+
+			}else if (cena_atu == cenas[4]) {
+
+				transicao_1()
+				transicao_in_1()
+				transicao_out_1()
+
+				if (pause == false) {
+
+					pause_block_black.alpha = 0
+
+					player.prevX = player.x
+					player.prevY = player.y
+
+					if (player.x != 900-player.width) {
+
+						if (teclas[teclas_input[0]]) {
+
+							player.x += player.spd
+
+						}
+
+					}
+
+					if (player.x != 0) {
+
+						if (teclas[teclas_input[1]]) {
+
+							player.x -= player.spd
+
+						}
+
+					}
+
+					if (player.y != 0) {
+
+						if (teclas[teclas_input[2]]) {
+
+							player.y -= player.spd
+
+						}
+
+					}
+
+					if (player.y != 600-player.width) {
+
+						if (teclas[teclas_input[3]]) {
+
+							player.y += player.spd
+
+						}
+
+					}
+
+					if (teclas[teclas_input[4]]) {
+
+						pause = true
+						teclas[teclas_input[4]] = false
+
+					}
+
+					if (player.x != player.prevX || player.y != player.prevY || player.x != player.prevX && player.y != player.prevY) {
+
+						console.clear()
+						console.log(`X: ${player.x} -- Y: ${player.y}`)
+
+					}
+
+					for (let i = 0; i < obstacolos.length; ++i) {
+
+						colisao(player.x, player.y, player.width, player.height, obstacolos[i].x, obstacolos[i].y, obstacolos[i].width, obstacolos[i].height, function () {
+
+							if (player.prevX + player.width <= obstacolos[i].x) {
+
+								player.x = obstacolos[i].x - player.width
+
+							}else if (player.prevX >= obstacolos[i].x + obstacolos[i].width) {
+
+								player.x = obstacolos[i].x + obstacolos[i].width
+
+							}
+
+							if (player.prevY + player.height <= obstacolos[i].y) {
+
+								player.y = obstacolos[i].y - player.height
+
+							}else if (player.prevY >= obstacolos[i].y + obstacolos[i].height) {
+
+								player.y = obstacolos[i].y + obstacolos[i].height
+
+							}
+
+						})
+
+					}
+
+					colisao(player.x, player.y, player.width, player.height, coroa_fim.x, coroa_fim.y, coroa_fim.width, coroa_fim.height, function () {
+
+						trasi_black.trasicao = "in"
+						funcao_transi = function() { cena_atu = cenas[5]
+						level_3()}
+						transi_atu = "transicao_1"
+
+					})
+
+					if (objetos.teleporter != undefined) {
+
+						colisao(player.x, player.y, player.width, player.height, objetos.teleporter[0].x, objetos.teleporter[0].y, objetos.teleporter[0].width, objetos.teleporter[0].height, function() {
+
+							if (teclas[teclas_input[5]] && objetos.teleporter_count[0] >= objetos.teleporter_count[1]) {
+
+								teclas[teclas_input[5]] = false
+
+								player.x = objetos.teleporter[3].x + objetos.teleporter[3].width/4
+								player.y = objetos.teleporter[3].y + objetos.teleporter[3].height/4
+
+						}})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.teleporter[1].x, objetos.teleporter[1].y, objetos.teleporter[1].width, objetos.teleporter[1].height, function() {
+
+							if (teclas[teclas_input[5]] && objetos.teleporter_count[0] >= objetos.teleporter_count[1]) {
+
+								teclas[teclas_input[5]] = false
+
+								player.x = objetos.teleporter[2].x + objetos.teleporter[2].width/4
+								player.y = objetos.teleporter[2].y + objetos.teleporter[2].height/4
+
+						}})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.teleporter[2].x, objetos.teleporter[2].y, objetos.teleporter[2].width, objetos.teleporter[2].height, function() {
+
+							if (teclas[teclas_input[5]] && objetos.teleporter_count[0] >= objetos.teleporter_count[1]) {
+
+								teclas[teclas_input[5]] = false
+
+								player.x = objetos.teleporter[1].x + objetos.teleporter[1].width/4
+								player.y = objetos.teleporter[1].y + objetos.teleporter[1].height/4
+
+						}})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.teleporter[3].x, objetos.teleporter[3].y, objetos.teleporter[3].width, objetos.teleporter[3].height, function() {
+
+							if (teclas[teclas_input[5]] && objetos.teleporter_count[0] >= objetos.teleporter_count[1]) {
+
+								teclas[teclas_input[5]] = false
+
+								player.x = objetos.teleporter[1].x + objetos.teleporter[1].width/4
+								player.y = objetos.teleporter[1].y + objetos.teleporter[1].height/4
+
+						}})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.teleporter[4].x, objetos.teleporter[4].y, objetos.teleporter[4].width, objetos.teleporter[4].height, function() {
+
+							if (teclas[teclas_input[5]] && objetos.teleporter_count[0] >= objetos.teleporter_count[1]) {
+
+								teclas[teclas_input[5]] = false
+
+								player.x = objetos.teleporter[1].x + objetos.teleporter[1].width/4
+								player.y = objetos.teleporter[1].y + objetos.teleporter[1].height/4
+
+						}})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.teleporter[5].x, objetos.teleporter[5].y, objetos.teleporter[5].width, objetos.teleporter[5].height, function() {
+
+							if (teclas[teclas_input[5]] && objetos.teleporter_count[0] >= objetos.teleporter_count[1]) {
+
+								teclas[teclas_input[5]] = false
+
+								player.x = objetos.teleporter[8].x + objetos.teleporter[8].width/4
+								player.y = objetos.teleporter[8].y + objetos.teleporter[8].height/4
+
+						}})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.teleporter[6].x, objetos.teleporter[6].y, objetos.teleporter[6].width, objetos.teleporter[6].height, function() {
+
+							if (teclas[teclas_input[5]] && objetos.teleporter_count[0] >= objetos.teleporter_count[1]) {
+
+								teclas[teclas_input[5]] = false
+
+								player.x = objetos.teleporter[0].x + objetos.teleporter[0].width/4
+								player.y = objetos.teleporter[0].y + objetos.teleporter[0].height/4
+
+						}})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.teleporter[7].x, objetos.teleporter[7].y, objetos.teleporter[7].width, objetos.teleporter[7].height, function() {
+
+							if (teclas[teclas_input[5]] && objetos.teleporter_count[0] >= objetos.teleporter_count[1]) {
+
+								teclas[teclas_input[5]] = false
+
+								player.x = objetos.teleporter[0].x + objetos.teleporter[0].width/4
+								player.y = objetos.teleporter[0].y + objetos.teleporter[0].height/4
+
+						}})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.teleporter[8].x, objetos.teleporter[8].y, objetos.teleporter[8].width, objetos.teleporter[8].height, function() {
+
+							if (teclas[teclas_input[5]] && objetos.teleporter_count[0] >= objetos.teleporter_count[1]) {
+
+								teclas[teclas_input[5]] = false
+
+								player.x = objetos.teleporter[0].x + objetos.teleporter[0].width/4
+								player.y = objetos.teleporter[0].y + objetos.teleporter[0].height/4
+
+					}})
+
+						if (objetos.teleporter_count[0] < objetos.teleporter_count[1]) {
+
+							objetos.teleporter_count[0]++
+
+					}}
+
+				}else{
+
+					pause_block_black.alpha = 0.5
+
+					if (teclas[teclas_input[2]]) {
+
+						teclas[teclas_input[2]] = false
+
+						if (op.select != 1) { op.select-- }
+						else{ op.select = op.select_max }
+
+						op.color1 = "white"
+						op.color2 = "white"
+
+					}
+
+					if (teclas[teclas_input[3]]) {
+
+						teclas[teclas_input[3]] = false
+
+						if (op.select != op.select_max) { op.select++ }
+						else{ op.select = 1 }
+
+						op.color1 = "white"
+						op.color2 = "white"
+
+					}
+
+					if (op.select == 1) { op.color1 = "red" 
+
+						if (teclas[teclas_input[4]]) {
+
+							pause = false
+							teclas[teclas_input[4]] = false
+
+						}
+
+					}
+
+					else if (op.select == 2) { op.color2 = "red" 
+
+						if (teclas[teclas_input[4]]) {
+
+							trasi_black.trasicao = "in"
+
+							funcao_transi = function() {
+
+								pause = false
+								cena_atu = cenas[0]
+								menu()
+
+							}
+
+							transi_atu = "transicao_1"
+
+						}
+
+					}
+				}
+
+			}else if (cena_atu == cenas[5]) {
+
+				transicao_1()
+				transicao_in_1()
+				transicao_out_1()
+
+				if (pause == false) {
+
+					pause_block_black.alpha = 0
+
+					player.prevX = player.x
+					player.prevY = player.y
+
+					if (player.x != 900-player.width) {
+
+						if (teclas[teclas_input[0]]) {
+
+							player.x += player.spd
+
+						}
+
+					}
+
+					if (player.x != 0) {
+
+						if (teclas[teclas_input[1]]) {
+
+							player.x -= player.spd
+
+						}
+
+					}
+
+					if (player.y != 0) {
+
+						if (teclas[teclas_input[2]]) {
+
+							player.y -= player.spd
+
+						}
+
+					}
+
+					if (player.y != 600-player.width) {
+
+						if (teclas[teclas_input[3]]) {
+
+							player.y += player.spd
+
+						}
+
+					}
+
+					if (teclas[teclas_input[4]]) {
+
+						pause = true
+						teclas[teclas_input[4]] = false
+
+					}
+
+					if (player.x != player.prevX || player.y != player.prevY || player.x != player.prevX && player.y != player.prevY) {
+
+						console.clear()
+						console.log(`X: ${player.x} -- Y: ${player.y}`)
+
+					}
+
+					for (let i = 0; i < obstacolos.length; ++i) {
+
+						colisao(player.x, player.y, player.width, player.height, obstacolos[i].x, obstacolos[i].y, obstacolos[i].width, obstacolos[i].height, function () {
+
+							if (player.prevX + player.width <= obstacolos[i].x) {
+
+								player.x = obstacolos[i].x - player.width
+
+							}else if (player.prevX >= obstacolos[i].x + obstacolos[i].width) {
+
+								player.x = obstacolos[i].x + obstacolos[i].width
+
+							}
+
+							if (player.prevY + player.height <= obstacolos[i].y) {
+
+								player.y = obstacolos[i].y - player.height
+
+							}else if (player.prevY >= obstacolos[i].y + obstacolos[i].height) {
+
+								player.y = obstacolos[i].y + obstacolos[i].height
+
+							}
+
+						})
+
+					}
+
+					if (objetos.button != undefined && objetos.button.active != true) {
+
+						colisao(player.x, player.y, player.width, player.height, objetos.button.x, objetos.button.y, objetos.button.width, objetos.button.height, function() {
+
+							if (teclas[teclas_input[5]]) {
+
+								objetos.button.active = true
+
+							}
+
+						})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.spikes.x, objetos.spikes.y, objetos.spikes.width, objetos.spikes.height, function() {
+
+							reset()
+
+						})
+
+					}
+
+					if (objetos.purple_key != undefined && objetos.purple_key.coleted == false) {
+
+						colisao(player.x, player.y, player.width, player.height, objetos.purple_key.x, objetos.purple_key.y, objetos.purple_key.width, objetos.purple_key.height, function() {
+
+							if (teclas[teclas_input[5]]) {
+
+								objetos.purple_key.coleted = true
+
+							}
+
+						})
+
+						colisao(player.x, player.y, player.width, player.height, objetos.purple_door.x, objetos.purple_door.y, objetos.purple_door.width, objetos.purple_door.height, function() {
+
+								if (player.prevX + player.width <= objetos.purple_door.x) {
+
+									player.x = objetos.purple_door.x - player.width
+
+								}else if (player.prevX >= objetos.purple_door.x + objetos.purple_door.width) {
+
+									player.x = objetos.purple_door.x + objetos.purple_door.width
+
+								}
+
+								if (player.prevY + player.height <= objetos.purple_door.y) {
+
+									player.y = objetos.purple_door.y - player.height
+
+								}else if (player.prevY >= objetos.purple_door.y + objetos.purple_door.height) {
+
+									player.y = objetos.purple_door.y + objetos.purple_door.height
+
+								}
+
+						})
+
+					}
+
+					colisao(player.x, player.y, player.width, player.height, coroa_fim.x, coroa_fim.y, coroa_fim.width, coroa_fim.height, function () {
+
+						zerou = true
+						trasi_black.trasicao = "in"
+						funcao_transi = function() { cena_atu = cenas[0]
+						menu()}
+						transi_atu = "transicao_1"
+
+					})
+				}
+
+			}
+
+		}
+
+		function loop() {
+
+			if (pc == true) {
+
+				document.addEventListener("keydown", e => teclas[e.key] = true)
+				document.addEventListener("keyup", e => teclas[e.key] = false)//verifica se uma tecla é precionado ou não
+
+				canvas.style.width = "900px"
+				canvas.style.height = "600px"
+
+				document.querySelector(".shift_button").style.marginLeft = "0px"
+				document.querySelector(".direita_button").style.opacity = 0
+				document.querySelector(".esquerda_button").style.opacity = 0
+				document.querySelector(".cima_button").style.opacity = 0
+				document.querySelector(".baixo_button").style.opacity = 0
+				document.querySelector(".enter_button").style.opacity = 0
+				document.querySelector(".shift_button").style.opacity = 0
+
+			}else{
+
+				canvas.style.width = "100vw"
+				canvas.style.height = "auto"
+				canvas.style.maxHeight = "100vh"
+
+				document.querySelector(".direita_button").style.opacity = button_trans
+				document.querySelector(".esquerda_button").style.opacity = button_trans
+				document.querySelector(".cima_button").style.opacity = button_trans
+				document.querySelector(".baixo_button").style.opacity = button_trans
+				document.querySelector(".enter_button").style.opacity = button_trans
+				document.querySelector(".shift_button").style.opacity = button_trans
+
+				direita_button.addEventListener("touchstart", function() {teclas[teclas_input[0]] = true})
+				direita_button.addEventListener("touchend", function() {teclas[teclas_input[0]] = false})
+
+				esquerda_button.addEventListener("touchstart", function() {teclas[teclas_input[1]] = true})
+				esquerda_button.addEventListener("touchend", function() {teclas[teclas_input[1]] = false})
+
+				cima_button.addEventListener("touchstart", function() {teclas[teclas_input[2]] = true})
+				cima_button.addEventListener("touchend", function() {teclas[teclas_input[2]] = false})
+
+				baixo_button.addEventListener("touchstart", function() {teclas[teclas_input[3]] = true})
+				baixo_button.addEventListener("touchend", function() {teclas[teclas_input[3]] = false})
+
+				enter_button.addEventListener("touchstart", function() {teclas[teclas_input[4]] = true})
+				enter_button.addEventListener("touchend", function() {teclas[teclas_input[4]] = false})
+
+				shift_button.addEventListener("touchstart", function() {teclas[teclas_input[5]] = true})
+				shift_button.addEventListener("touchend", function() {teclas[teclas_input[5]] = false})
+
+			}
+			
+			window.addEventListener("load", verificarOrientacao);
+			window.addEventListener("resize", verificarOrientacao);
+
+			draw()
+			update()
+			requestAnimationFrame(loop)
+
+		}
+
+		menu()
+		loop()
+
+	</script>
+
+</html>
